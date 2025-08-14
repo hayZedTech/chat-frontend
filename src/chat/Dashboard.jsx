@@ -10,7 +10,7 @@ export const Dashboard = () => {
   const [editMsg, setEditMsg] = useState("");
   const [replyTo, setReplyTo] = useState(null);
   const [activeReplyBox, setActiveReplyBox] = useState(null);
-  const URL = "http://localhost:4000/app";
+  const URL = `${import.meta.env.VITE_API_URL}/app`;
   const navigate = useNavigate();
   const bottom = useRef();
   const lastRef = useRef(null);
