@@ -14,7 +14,7 @@ import {
 } from 'react-icons/md';
 import { MdSend } from 'react-icons/md';
 
-import './chat.css'; 
+import './chat.css';  
 
 const URL = `${import.meta.env.VITE_API_URL}`;
 
@@ -198,7 +198,7 @@ export const Dashboard = () => {
                                 <div className="avatar">{getInitials(u.username)}</div>
                                 <div>
                                     <div className="name">{u.username}</div>
-                                    <div className="preview">Start a private chat...</div>
+                                    <div className="preview">Start a private chat....</div>
                                 </div>
                             </div>
                         ))}
