@@ -1,41 +1,66 @@
 import { useState } from "react";
-import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import "./Login.css"; 
 
 export const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const loginData = async (e) => {
-    e.preventDefault();
+  const loginData = async (a) => {
+    a.preventDefault();
+
+    if (!username || !password) {
+      alert("Field cannot be empty!!!");
+      return;
+    }
+
     try {
-      console.log("Login request to:", import.meta.env.VITE_API_URL);
-
-      const res = await axios.post(`${import.meta.env.VITE_API_URL}/login`, { username, password });
-
-      console.log("Response:", res.data);
-      if (res.data.user) {
-        localStorage.setItem("user", JSON.stringify(res.data.user));
-        navigate("/");
-      } else {
-        alert("Login failed: no user returned");
-      }
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/login`, {
+        username,
+        password,
+      });
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+      navigate("/");
     } catch (err) {
-      console.error("Login error:", err);
-      alert(err.response?.data?.error || "Login failed");
+      alert(err.response?.data?.error);
     }
   };
 
   return (
-    <>
-      <h1>Login</h1>
-      <form onSubmit={loginData}>
-        <input type="text" value={username} onChange={e => setUsername(e.target.value)} placeholder="Username" />
-        <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" />
-        <button type="submit">Login</button>
-      </form>
-      <Link to="/signup">Signup</Link>
-    </>
+    <div className="login-container">
+      <div className="login-card">
+        <div className="login-header">
+          <h1 className="login-title">Welcome Back</h1>
+          <p className="login-subtitle">Sign in to your account</p>
+        </div>
+
+        <form onSubmit={loginData} className="login-form">
+          <div className="input-group">
+            <input
+              type="text" placeholder="Username" value={username} onChange={(x) => setUsername(x.target.value)}
+              className="login-input"
+            />
+          </div>
+
+          <div className="input-group">
+            <input
+              type="password" placeholder="Password" value={password}  onChange={(x) => setPassword(x.target.value)}  className="login-input" 
+            />
+          </div>
+
+          <button type="submit" className="login-button">  Sign In</button>
+        </form>
+
+        <div className="login-footer">
+          <p className="signup-text">
+            Don't have an account?{" "}
+            <Link to="/signup" className="signup-link">Create one </Link>
+
+          </p>
+        </div>
+      </div>
+    </div>
   );
 };

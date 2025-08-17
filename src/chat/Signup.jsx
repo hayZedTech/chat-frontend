@@ -1,51 +1,72 @@
 import { useState } from "react";
-import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import "./Login.css"; // same style pattern as Login.css
 
 export const Signup = () => {
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
-    const navigate = useNavigate();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
-    const signupData = async (e) => {
-        e.preventDefault();
-        try {
-            console.log("Signup request to:", import.meta.env.VITE_API_URL);
+  const signupData = async (e) => {
+    e.preventDefault();
 
-            const res = await axios.post(
-                `${import.meta.env.VITE_API_URL}/signup`,
-                { username, password }
-            );
+    if (!username || !password) {
+      alert("Field cannot be empty!!!");
+      return;
+    }
 
-            console.log(res.data); 
-            // alert(res.data.message); // Show success message
-            alert("Signed up succesfully!")
-            navigate("/login"); // Redirect to login page
-        } catch (err) {
-            console.error("Signup error:", err);
-            alert(err.response?.data?.error || "Signup failed");
-        }
-    };
+    try {
+      await axios.post(`${import.meta.env.VITE_API_URL}/signup`, { username, password });
+      navigate("/login");
+    } catch (err) {
+      alert(err.response?.data?.error);
+    }
+  };
 
-    return (
-        <>
-            <h1>Signup</h1>
-            <form onSubmit={signupData}>
-                <input
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Username"
-                />
-                <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Password"
-                />
-                <button type="submit">Signup</button>
-            </form>
-            <Link to="/login">Login</Link>
-        </>
-    );
+  return (
+    <div className="signup-container">
+      <div className="signup-card">
+        <div className="signup-header">
+          <h1 className="signup-title">Create Account</h1>
+          <p className="signup-subtitle">Join us and start chatting!</p>
+        </div>
+
+        <form onSubmit={signupData} className="signup-form">
+          <div className="input-group">
+            <input
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="signup-input"
+            />
+          </div>
+
+          <div className="input-group">
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="signup-input"
+            />
+          </div>
+
+          <button type="submit" className="signup-button">
+            Sign Up
+          </button>
+        </form>
+
+        <div className="signup-footer">
+          <p className="login-text">
+            Already have an account?{" "}
+            <Link to="/login" className="login-link">
+              Log in
+            </Link>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
 };
