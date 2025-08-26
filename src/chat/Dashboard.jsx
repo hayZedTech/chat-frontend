@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import {
   MdOutlineModeNight,
   MdOutlineWbSunny,
-  MdOutlineSend,
   MdOutlineDelete,
   MdOutlineEdit,
   MdOutlineReply,
@@ -19,267 +18,269 @@ import './chat.css';
 const URL = `${import.meta.env.VITE_API_URL}`;
 
 export const Dashboard = () => {
-    const [messages, setMessages] = useState([]);
-    const [users, setUsers] = useState([]);
-    const [msgInput, setMsgInput] = useState("");
-    const [editInfo, setEditInfo] = useState(null);
-    const [editMsg, setEditMsg] = useState("");
-    const [replyInfo, setReplyInfo] = useState(null);
-    const [selectedChat, setSelectedChat] = useState({ type: "general", data: null });
+  const [messages, setMessages] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [msgInput, setMsgInput] = useState("");
+  const [editInfo, setEditInfo] = useState(null);
+  const [editMsg, setEditMsg] = useState("");
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [replyInputs, setReplyInputs] = useState({});
+  const [selectedChat, setSelectedChat] = useState({ type: "general", data: null });
 
-    const user = JSON.parse(localStorage.getItem("user"));
-    const navigate = useNavigate();
-    const messagesEndRef = useRef(null);
+  const user = JSON.parse(localStorage.getItem("user"));
+  const navigate = useNavigate();
+  const messagesEndRef = useRef(null);
 
-    const fetchMessages = async () => {
-        try {
-            let res;
-            if (selectedChat.type === "general") {
-                res = await axios.get(`${URL}/messages/general`);
-            } else if (selectedChat.type === "private") {
-                res = await axios.get(`${URL}/messages/private/${selectedChat.data.id}`, {
-                    params: { currentUserId: user.id }
-                });
-            }
-            setMessages(res.data);
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
-    const fetchUsers = async () => {
-        try {
-            const res = await axios.get(`${URL}/users`);
-            setUsers(res.data.filter(u => u.id !== user.id));
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
-    useEffect(() => {
-        fetchUsers();
-    }, []);
-
-    useEffect(() => {
-        fetchMessages();
-    }, [selectedChat]);
-
-    useEffect(() => {
-    if (messagesEndRef.current) {
-        messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+  const fetchMessages = async () => {
+    try {
+      let res;
+      if (selectedChat.type === "general") {
+        res = await axios.get(`${URL}/messages/general`);
+      } else if (selectedChat.type === "private") {
+        res = await axios.get(`${URL}/messages/private/${selectedChat.data.id}`, {
+          params: { currentUserId: user.id }
+        });
+      }
+      setMessages(res.data);
+    } catch (err) {
+      console.error(err);
     }
-}, [messages]);
+  };
 
-    const handleSendMessage = async (e) => {
-        e.preventDefault();
-        if (!msgInput.trim()) return;
+  const fetchUsers = async () => {
+    try {
+      const res = await axios.get(`${URL}/users`);
+      setUsers(res.data.filter(u => u.id !== user.id));
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-        try {
-            const payload = {
-                sender_id: user.id,
-                message: msgInput,
-                replyTo: replyInfo ? replyInfo.id : null
-            };
-            
-            if (selectedChat.type === "general") {
-                await axios.post(`${URL}/messages/general`, payload);
-            } else if (selectedChat.type === "private") {
-                await axios.post(`${URL}/messages/private`, { ...payload, recipient_id: selectedChat.data.id });
-            }
+  useEffect(() => { fetchUsers(); }, []);
+  useEffect(() => { fetchMessages(); }, [selectedChat]);
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
 
-            setMsgInput("");
-            setReplyInfo(null);
-            fetchMessages();
-        } catch (err) {
-            console.error(err);
-        }
-    };
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!msgInput.trim()) return;
 
-    const handleEdit = async (e) => {
-        e.preventDefault();
-        if (!editMsg.trim()) return;
+    try {
+      const payload = { sender_id: user.id, message: msgInput, replyTo: null };
+      if (selectedChat.type === "general") {
+        await axios.post(`${URL}/messages/general`, payload);
+      } else {
+        await axios.post(`${URL}/messages/private`, { ...payload, recipient_id: selectedChat.data.id });
+      }
+      setMsgInput("");
+      fetchMessages();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-        try {
-            await axios.put(`${URL}/messages/${editInfo.id}`, { message: editMsg });
-            setEditInfo(null);
-            setEditMsg("");
-            fetchMessages();
-        } catch (err) {
-            console.error(err);
-        }
-    };
+  const handleSendReply = async (e, msg) => {
+    e.preventDefault();
+    const replyText = replyInputs[msg.id];
+    if (!replyText || !replyText.trim()) return;
 
-    const handleDelete = async (id) => {
-        try {
-            await axios.delete(`${URL}/messages/${id}`);
-            fetchMessages();
-        } catch (err) {
-            console.error(err);
-        }
-    };
+    try {
+      const payload = { sender_id: user.id, message: replyText, replyTo: msg.id };
+      if (selectedChat.type === "general") {
+        await axios.post(`${URL}/messages/general`, payload);
+      } else {
+        await axios.post(`${URL}/messages/private`, { ...payload, recipient_id: selectedChat.data.id });
+      }
 
-    const handleLogout = () => {
-        localStorage.removeItem("user");
-        navigate("/login");
-    };
+      setReplyInputs(prev => ({ ...prev, [msg.id]: "" }));
+      setReplyingTo(null);
+      fetchMessages();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-    const getInitials = (name) => {
-        if (!name) return "??";
-        return name.split(" ").map(n => n[0]).join("").toUpperCase();
-    };
+  const handleEdit = async (e) => {
+    e.preventDefault();
+    if (!editMsg.trim()) return;
 
-    const toggleTheme = () => {
-        document.body.classList.toggle('dark');
-        localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
-    };
+    try {
+      await axios.put(`${URL}/messages/${editInfo.id}`, { message: editMsg });
+      setEditInfo(null);
+      setEditMsg("");
+      fetchMessages();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-    const toggleSidebar = () => {
-      document.body.classList.toggle('show-sidebar');
-    };
-    
-    const handleKeyDown = (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleSendMessage(e);
-        }
-    };
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`${URL}/messages/${id}`);
+      fetchMessages();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-    // useEffect(() => {
-    //     const chatElement = messagesEndRef.current?.parentNode;
-    //     if (chatElement) {
-    //         const isScrolledToBottom = chatElement.scrollHeight - chatElement.clientHeight <= chatElement.scrollTop + 1;
-    //         if (isScrolledToBottom) {
-    //             messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-    //         }
-    //     }
-    // }, [messages]);
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
 
-    return (
-        <div className="app">
-            <div className="topbar">
-                <div className="brand">
-                    <button className="menu-btn" onClick={toggleSidebar}><MdMenu /></button>
-                    <div className="logo">C</div>
-                    <span>Chatify</span>
-                </div>
-                <div className="actions">
-                    <button className="icon-btn" onClick={toggleTheme}>
-                        <MdOutlineModeNight className="dark-icon" style={{display: document.body.classList.contains('dark') ? 'block' : 'none'}}/>
-                        <MdOutlineWbSunny className="light-icon" style={{display: document.body.classList.contains('dark') ? 'none' : 'block'}}/>
-                    </button>
-                    <button className="icon-btn  text-danger" onClick={handleLogout}>Logout</button>
-                </div>
-            </div>
+  const getInitials = (name) => !name ? "??" : name.split(" ").map(n => n[0]).join("").toUpperCase();
 
-            <div className="main">
-                <aside className="sidebar">
-                    <div className="search">
-                        <input type="text" placeholder="Search or start a new chat…" />
-                    </div>
-                    <div className="chats">
-                        <div className={`chat-item ${selectedChat.type === 'general' ? 'active' : ''}`}
-                            onClick={() => {
-                                setSelectedChat({ type: "general", data: null });  toggleSidebar()
-                            }}
-                        >
-                            <div className="avatar">GC</div>
-                            <div>
-                                <div className="name">General Chat</div>
-                                <div className="preview">Public messages...</div>
-                            </div>
-                        </div>
-                        {users.map(u => (
-                            <div
-                                key={u.id}
-                                className={`chat-item ${selectedChat.type === 'private' && selectedChat.data.id === u.id ? 'active' : ''}`}
-                                onClick={() => { setSelectedChat({ type: "private", data: u }); toggleSidebar();
-                                }}
-                            >
-                                <div className="avatar">{getInitials(u.username)}</div>
-                                <div>
-                                    <div className="name">{u.username}</div>
-                                    <div className="preview">Start a private chat....</div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </aside>
+  const toggleTheme = () => {
+    document.body.classList.toggle('dark');
+    localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+  };
 
-                <section className="chat">
-                    <div className="chat-header">
-                        <button className="go-back-btn" onClick={toggleSidebar}><MdArrowBackIos /></button>
-                        <div className="avatar" style={{ width: '38px', height: '38px' }}>
-                            {selectedChat.type === 'general' ? 'GC' : selectedChat.data.username}
-                        </div>
-                        <div className="title">
-                            <div className="name">
-                                {selectedChat.type === 'general' ? 'General Chat' : selectedChat.data.username}
-                            </div>
-                        </div>
-                    </div>
-                    <div className="messages">
-                        {messages.map(m => {
-                            const isUserMessage = m.sender_id === user.id;
-                            const replyMessage = m.replyTo ? messages.find(msg => msg.id === m.replyTo) : null;
-                            const isEditing = editInfo?.id === m.id;
-                            
-                            return (
-                                    <div key={m.id}className={`msg ${isUserMessage ? 'from-me' : ''} ${replyMessage ? 'reply' : ''}`}>
+  const toggleSidebar = () => { document.body.classList.toggle('show-sidebar'); };
 
-                                    {isEditing ? (
-                                        <form onSubmit={handleEdit}>
-                                            <textarea
-                                                value={editMsg} onChange={(e) => setEditMsg(e.target.value)}rows="1"style={{ width: '100%' }}   
-                                            />
-                                            <button type="submit" className="btn secondary">Save</button>
-                                            <button type="button" className="btn secondary" onClick={() => setEditInfo(null)}>Cancel</button>
-                                        </form>
-                                    ) : (
-                                        <>
-                                            {replyMessage && (
-                                                <div className="reply-to">
-                                                    <span className="reply-to-text">{isUserMessage ? 'You replied to' : `${m.sender_name} replied to`} {replyMessage.sender_name}: "{replyMessage.message.substring(0, 30)}..."
-                                                    </span>
-                                                </div>
-                                            )}
-                                            <div className="bubble">
-                                                <span className="sender-name">{isUserMessage ? 'You: ' : `${m.sender_name}: `}</span>
-                                                {m.message}
-                                            </div>
-                                            <div className="meta">
-                                                <span>{new Date(m.created_at).toLocaleTimeString()}</span>{isUserMessage && <span> ✓✓</span>}
-                                            </div>
-                                            <div className="actions">
-                                                <button className="icon-btn" onClick={() => setReplyInfo(m)} title="Reply"><MdOutlineReply /></button>
-                                                {isUserMessage && (
-                                                    <>
-                                                       <button className="icon-btn" onClick={() => { setEditInfo(m); setEditMsg(m.message); }}title="Edit"><MdOutlineEdit /> </button>
-                                                    </>
-                                                )}
-                                                <button className="icon-btn" onClick={() => handleDelete(m.id)}title="Delete"><MdOutlineDelete /> </button>
-                                            </div>
-                                        </>
-                                    )}
-                                </div>
-                            );
-                        })}
-                        <div ref={messagesEndRef} />
-                    </div>
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage(e);
+    }
+  };
 
-                    <form className="composer" onSubmit={handleSendMessage}>
-                        {replyInfo && (
-                            <div className="composer-reply-pill">
-                                <span className="pill-text">Replying to {replyInfo.sender_name}</span>
-                                <button type="button" className="close-pill" onClick={() => setReplyInfo(null)}><MdClose /></button>
-                            </div>
-                        )}
-                        <textarea value={msgInput} onChange={(e) => setMsgInput(e.target.value)} onKeyDown={handleKeyDown}placeholder="Message..."rows={replyInfo ? 2 : 1}  />                            
-                        <button type="submit" className="send" disabled={!msgInput.trim()}> ➤
-                            <MdSend className="send-icon" />
-                        </button>
-                    </form>
-                </section>
-            </div>
+ return (
+  <div className="app">
+    {/* topbar */}
+    <div className="topbar">
+      <div className="brand">
+        <button className="menu-btn" onClick={toggleSidebar}><MdMenu /></button>
+        <div className="logo">C</div>
+        <span>Chat App</span>
+      </div>
+      <div className="actions">
+        <button className="icon-btn" onClick={toggleTheme}>
+          <MdOutlineModeNight className="dark-icon" style={{ display: document.body.classList.contains('dark') ? 'block' : 'none' }} />
+          <MdOutlineWbSunny className="light-icon" style={{ display: document.body.classList.contains('dark') ? 'none' : 'block' }} />
+        </button>
+        <button className="icon-btn text-danger" onClick={handleLogout}>Logout</button>
+      </div>
+    </div>
+
+    <div className="main">
+      {/* sidebar */}
+      <aside className="sidebar">
+        <div className="search">
+          <input type="text" placeholder="Search or start a new chat…" />
         </div>
-    );
+        <div className="chats">
+          <div className={`chat-item ${selectedChat.type === 'general' ? 'active' : ''}`}
+            onClick={() => { setSelectedChat({ type: "general", data: null }); toggleSidebar(); }}>
+            <div className="avatar">GC</div>
+            <div>
+              <div className="name">General Chat</div>
+              <div className="preview">Public messages...</div>
+            </div>
+          </div>
+          {users.map(u => (
+            <div key={u.id} className={`chat-item ${selectedChat.type === 'private' && selectedChat.data.id === u.id ? 'active' : ''}`}
+              onClick={() => { setSelectedChat({ type: "private", data: u }); toggleSidebar(); }}>
+              <div className="avatar">{getInitials(u.username)}</div>
+              <div>
+                <div className="name">{u.username}</div>
+                <div className="preview">Start a private chat....</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </aside>
+
+      {/* chat section */}
+      <section className="chat">
+        <div className="chat-header">
+          <button className="go-back-btn" onClick={toggleSidebar}><MdArrowBackIos /></button>
+          <div className="avatar" style={{ width: '38px', height: '38px' }}>
+            {selectedChat.type === 'general' ? 'GC' : selectedChat.data.username}
+          </div>
+          <div className="title">
+            <div className="name">
+              {selectedChat.type === 'general' ? 'General Chat' : selectedChat.data.username}
+            </div>
+          </div>
+        </div>
+
+        <div className="messages">
+          {messages.map(m => {
+            const isUserMessage = m.sender_id === user.id;
+            const replyMessage = m.replyTo ? messages.find(msg => msg.id === m.replyTo) : null;
+            const isEditing = editInfo?.id === m.id;
+
+            return (
+              <div key={m.id} className={`msg ${isUserMessage ? 'from-me' : ''} ${replyMessage ? 'reply' : ''}`}>
+                {isEditing ? (
+                  <form onSubmit={handleEdit}>
+                    <textarea value={editMsg} onChange={(e) => setEditMsg(e.target.value)} rows="1" style={{ width: '100%' }} />
+                    <button type="submit" className="btn secondary">Save</button>
+                    <button type="button" className="btn secondary" onClick={() => setEditInfo(null)}>Cancel</button>
+                  </form>
+                ) : (
+                  <>
+                    {replyMessage && (
+                      <div className="reply-preview">
+                        <div className="reply-preview-header">
+                          {replyMessage.sender_id === user.id ? "You" : replyMessage.sender_name}
+                        </div>
+                        <div className="reply-preview-message">
+                          {/* {replyMessage.message} */}Hey
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="bubble-row">
+                      <div className="bubble">
+                        <span className="sender-name">{isUserMessage ? 'You: ' : `${m.sender_name}: `}</span>
+                        {m.message}
+                      </div>
+                      <div className="actions">
+                        <button className="icon-btn" onClick={() => setReplyingTo(m)} title="Reply"><MdOutlineReply /></button>
+                        {isUserMessage && (
+                          <button className="icon-btn" onClick={() => { setEditInfo(m); setEditMsg(m.message); }} title="Edit"><MdOutlineEdit /></button>
+                        )}
+                        <button className="icon-btn" onClick={() => handleDelete(m.id)} title="Delete"><MdOutlineDelete /></button>
+                      </div>
+                    </div>
+
+                    {replyingTo?.id === m.id && (
+                      <form className="reply-box" onSubmit={(e) => handleSendReply(e, m)}>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder={`Reply to ${m.sender_name}...`}
+                          value={replyInputs[m.id] || ""}
+                          onChange={(e) => setReplyInputs(prev => ({ ...prev, [m.id]: e.target.value }))}
+                        />
+                        <button type="submit" className="send" disabled={!replyInputs[m.id]?.trim()}><MdSend /></button>
+                        <button type="button" className="close-pill" onClick={() => setReplyingTo(null)}><MdClose /></button>
+                      </form>
+                    )}
+
+                    <div className="meta">
+                      <span>{new Date(m.created_at).toLocaleTimeString()}</span>{isUserMessage && <span> ✓✓</span>}
+                    </div>
+                  </>
+                )}
+              </div>
+            );
+          })}
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* main composer */}
+        <form className="composer" onSubmit={handleSendMessage}>
+          <textarea value={msgInput} onChange={(e) => setMsgInput(e.target.value)} onKeyDown={handleKeyDown} placeholder="Message..." rows={1} />                            
+          <button type="submit" className="send" disabled={!msgInput.trim()}>➤<MdSend className="send-icon" /></button>
+        </form>
+      </section>
+    </div>
+  </div>
+);
+
 };
