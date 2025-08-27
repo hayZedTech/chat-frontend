@@ -242,14 +242,14 @@ export const Dashboard = () => {
                     )}
 
                     <div className="bubble-row">
-                      <div className="bubble">
+                      <div className="bubble ">
                         <span className="sender-name">{isUserMessage ? 'You: ' : `${m.sender_name}: `}</span>
                         {m.message}
                       </div>
-                      <div className="actions">
-                        <button className="icon-btn" onClick={() => setReplyingTo(m)} title="Reply"><MdOutlineReply /></button>
+                      <div className="actions" style={{backgroundColor:"bisque"}}>
+                        <button className="icon-btn text-black" onClick={() => setReplyingTo(m)} title="Reply"><MdOutlineReply /></button>
                         {isUserMessage && (
-                          <button className="icon-btn" onClick={() => { setEditInfo(m); setEditMsg(m.message); }} title="Edit"><MdOutlineEdit /></button>
+                          <button className="icon-btn text-black" onClick={() => { setEditInfo(m); setEditMsg(m.message); }} title="Edit"><MdOutlineEdit /></button>
                         )}
                         <button className="icon-btn text-danger" onClick={() => handleDelete(m.id)} title="Delete"><MdOutlineDelete /></button>
                       </div>
