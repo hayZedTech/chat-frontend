@@ -29,7 +29,8 @@ export const Dashboard = () => {
 
   const user = JSON.parse(localStorage.getItem("user"));
   const navigate = useNavigate();
-  const messagesEndRef = useRef(null);
+  const messagesEndRef = useRef();
+  const lastRef = useRef(null);
 
   const fetchMessages = async () => {
     try {
@@ -58,11 +59,18 @@ export const Dashboard = () => {
 
   useEffect(() => { fetchUsers(); }, []);
   useEffect(() => { fetchMessages(); }, [selectedChat]);
+
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    if (lastRef.current === "load") {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      
     }
+    lastRef.current = null;
   }, [messages]);
+
+  useEffect(()=>{
+    lastRef.current = "load";
+  }, [])
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -75,8 +83,10 @@ export const Dashboard = () => {
       } else {
         await axios.post(`${URL}/messages/private`, { ...payload, recipient_id: selectedChat.data.id });
       }
+      lastRef.current = "load";
       setMsgInput("");
-      fetchMessages();
+     await fetchMessages();
+      
     } catch (err) {
       console.error(err);
     }
@@ -91,13 +101,14 @@ export const Dashboard = () => {
       const payload = { sender_id: user.id, message: replyText, replyTo: msg.id };
       if (selectedChat.type === "general") {
         await axios.post(`${URL}/messages/general`, payload);
+        lastRef.current = "load";
       } else {
         await axios.post(`${URL}/messages/private`, { ...payload, recipient_id: selectedChat.data.id });
       }
 
       setReplyInputs(prev => ({ ...prev, [msg.id]: "" }));
       setReplyingTo(null);
-      fetchMessages();
+     await fetchMessages();
     } catch (err) {
       console.error(err);
     }
@@ -111,7 +122,7 @@ export const Dashboard = () => {
       await axios.put(`${URL}/messages/${editInfo.id}`, { message: editMsg });
       setEditInfo(null);
       setEditMsg("");
-      fetchMessages();
+     await fetchMessages();
     } catch (err) {
       console.error(err);
     }
@@ -120,7 +131,7 @@ export const Dashboard = () => {
   const handleDelete = async (id) => {
     try {
       await axios.delete(`${URL}/messages/${id}`);
-      fetchMessages();
+      await fetchMessages();
     } catch (err) {
       console.error(err);
     }
@@ -153,7 +164,7 @@ export const Dashboard = () => {
     <div className="topbar">
       <div className="brand">
         <button className="menu-btn" onClick={toggleSidebar}><MdMenu /></button>
-        <div className="logo">C</div>
+        <div className="logo">Welcome</div>
         <span>{user.username.toUpperCase()}</span>
       </div>
       <div className="actions">
@@ -168,9 +179,9 @@ export const Dashboard = () => {
     <div className="main">
       {/* sidebar */}
       <aside className="sidebar">
-        <div className="search">
+        {/* <div className="search">
           <input type="text" placeholder="Search or start a new chat…" />
-        </div>
+        </div> */}
         <div className="chats">
           <div className={`chat-item ${selectedChat.type === 'general' ? 'active' : ''}`}
             onClick={() => { setSelectedChat({ type: "general", data: null }); toggleSidebar(); }}>
@@ -197,7 +208,7 @@ export const Dashboard = () => {
       <section className="chat">
         <div className="chat-header">
           <button className="go-back-btn" onClick={toggleSidebar}><MdArrowBackIos /></button>
-          <div className="avatar" style={{ width: '38px', height: '38px' }}>
+          <div className="avatar" style={{ width: 'fit-content', height: '38px' }}>
             {selectedChat.type === 'general' ? 'GC' : selectedChat.data.username}
           </div>
           <div className="title">
@@ -247,7 +258,9 @@ export const Dashboard = () => {
                         {m.message}
                       </div>
                       <div className="actions" >
-                        <button style={{backgroundColor:"bisque"}} className="icon-btn text-black" onClick={() => setReplyingTo(m)} title="Reply"><MdOutlineReply /></button>
+                        {!isUserMessage && (
+                          <button style={{backgroundColor:"bisque"}} className="icon-btn text-black" onClick={() => setReplyingTo(m)} title="Reply"><MdOutlineReply /></button>
+                        )}
                         {isUserMessage && (
                           <button style={{backgroundColor:"bisque"}} className="icon-btn text-black" onClick={() => { setEditInfo(m); setEditMsg(m.message); }} title="Edit"><MdOutlineEdit /></button>
                         )}

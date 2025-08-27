@@ -78,9 +78,10 @@ body {
   align-items: center;
   justify-content: center;
   color: white;
-  width: 32px;
+  width: fit-content;
   height: 32px;
   font-size: 1.2rem;
+  padding: 10px;
 }
 .actions {
   display: flex;
@@ -151,11 +152,12 @@ body {
   align-items: center;
   cursor: pointer;
   transition: background .2s ease;
+  /* width: 200px !important; */
 }
 .chat-item:hover, .chat-item.active { background: var(--panel-2); }
 .avatar {
-  width: 44px;
-  height: 44px;
+  width: fit-content;
+  height: 34px;
   border-radius: 12px;
   background: linear-gradient(135deg, lime, var(--accent-600));
   display: inline-flex;
@@ -165,6 +167,7 @@ body {
   font-weight: 700;
   font-size: 1.2rem;
   text-transform: uppercase;
+  padding:3px 10px;
 }
 .chat-meta { display: flex; align-items: center; gap: 6px; }
 .name { font-weight: 600; }
