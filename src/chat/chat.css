@@ -259,7 +259,7 @@ body {
 
 .from-me {
   margin-left: auto;
-  background: linear-gradient(135deg, lime, var(--accent-600));
+  background: linear-gradient(135deg, green, var(--accent-600));
   color: white;
   border: none;
 }

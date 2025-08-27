@@ -210,8 +210,12 @@ export const Dashboard = () => {
         <div className="messages">
           {messages.map(m => {
             const isUserMessage = m.sender_id === user.id;
-            const replyMessage = m.replyTo ? messages.find(msg => msg.id === m.replyTo) : null;
+            const replyMessage = m.replyto ? messages.find(msg => msg.id === m.replyto) : null;
             const isEditing = editInfo?.id === m.id;
+            const truncate = (text, length) => {
+              return text.length > length ? text.slice(0, length) + "..." : text;
+            };
+
 
             return (
               <div key={m.id} className={`msg ${isUserMessage ? 'from-me' : ''} ${replyMessage ? 'reply' : ''}`}>
@@ -224,13 +228,16 @@ export const Dashboard = () => {
                 ) : (
                   <>
                     {replyMessage && (
-                      <div className="reply-preview">
-                        <div className="reply-preview-header">
-                          {replyMessage.sender_id === user.id ? "You" : replyMessage.sender_name}
+                      <div className="reply-preview  text-warning">
+                        <i>
+                          <div className="reply-preview-header">
+                          Replying to:
+                          {truncate(replyMessage.sender_id === user.id ? "You" : replyMessage.sender_name, 10)}
                         </div>
                         <div className="reply-preview-message">
-                          {/* {replyMessage.message} */}Hey
+                          {truncate(replyMessage.message, 20) }
                         </div>
+                        </i>
                       </div>
                     )}
 
