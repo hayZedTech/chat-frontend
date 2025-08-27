@@ -246,12 +246,12 @@ export const Dashboard = () => {
                         <span className="sender-name">{isUserMessage ? 'You: ' : `${m.sender_name}: `}</span>
                         {m.message}
                       </div>
-                      <div className="actions" style={{backgroundColor:"bisque"}}>
-                        <button className="icon-btn text-black" onClick={() => setReplyingTo(m)} title="Reply"><MdOutlineReply /></button>
+                      <div className="actions" >
+                        <button style={{backgroundColor:"bisque"}} className="icon-btn text-black" onClick={() => setReplyingTo(m)} title="Reply"><MdOutlineReply /></button>
                         {isUserMessage && (
-                          <button className="icon-btn text-black" onClick={() => { setEditInfo(m); setEditMsg(m.message); }} title="Edit"><MdOutlineEdit /></button>
+                          <button style={{backgroundColor:"bisque"}} className="icon-btn text-black" onClick={() => { setEditInfo(m); setEditMsg(m.message); }} title="Edit"><MdOutlineEdit /></button>
                         )}
-                        <button className="icon-btn text-danger" onClick={() => handleDelete(m.id)} title="Delete"><MdOutlineDelete /></button>
+                        <button style={{backgroundColor:"bisque"}} className="icon-btn text-danger" onClick={() => handleDelete(m.id)} title="Delete"><MdOutlineDelete /></button>
                       </div>
                     </div>
 
