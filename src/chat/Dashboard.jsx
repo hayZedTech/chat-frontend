@@ -301,7 +301,16 @@ export const Dashboard = () => {
                       )}
 
                       <div className="meta">
-                        <span>{new Date(m.created_at).toLocaleTimeString()}</span>{isUserMessage && <span> ✓✓</span>}
+                        <span>
+                          {new Date(m.created_at).toLocaleString("en-US", {
+                            day: "2-digit",
+                            month: "short",  // or "long" if you want full month name
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit"
+                          })}
+                        </span>
+                        {isUserMessage && <span> ✓✓</span>}
                       </div>
                     </>
                   )}
