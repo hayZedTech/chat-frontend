@@ -221,7 +221,7 @@ export const Dashboard = () => {
               <div key={m.id} className={`msg ${isUserMessage ? 'from-me' : ''} ${replyMessage ? 'reply' : ''}`}>
                 {isEditing ? (
                   <form onSubmit={handleEdit}>
-                    <textarea className=" form-control" value={editMsg} onChange={(e) => setEditMsg(e.target.value)} rows="1" style={{ width: '100%' }} />
+                    <input type="text" className=" form-control" value={editMsg} onChange={(e) => setEditMsg(e.target.value)} rows="1" style={{ width: '100%' }} />
                     <button type="submit" className="btn secondary">Save</button>
                     <button type="button" className="btn secondary" onClick={() => setEditInfo(null)}>Cancel</button>
                   </form>
