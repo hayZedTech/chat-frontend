@@ -163,10 +163,10 @@ export const Dashboard = () => {
       <div className="topbar">
         <div className="brand">
           <button className="menu-btn" onClick={toggleSidebar}><MdMenu /></button>
-          <div className="logo">Welcome</div>
+          <div className="logo d-none d-lg-block">Welcome</div>
           <span>{user.username.toUpperCase()}</span>
         </div>
-        <div className="actions">
+        <div className="actions mx-1">
           <button className="icon-btn" onClick={toggleTheme}>
             <MdOutlineModeNight className="dark-icon" style={{ display: document.body.classList.contains('dark') ? 'block' : 'none' }} />
             <MdOutlineWbSunny className="light-icon" style={{ display: document.body.classList.contains('dark') ? 'none' : 'block' }} />
