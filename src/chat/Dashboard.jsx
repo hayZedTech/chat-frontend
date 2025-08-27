@@ -251,7 +251,7 @@ export const Dashboard = () => {
                         {isUserMessage && (
                           <button className="icon-btn" onClick={() => { setEditInfo(m); setEditMsg(m.message); }} title="Edit"><MdOutlineEdit /></button>
                         )}
-                        <button className="icon-btn" onClick={() => handleDelete(m.id)} title="Delete"><MdOutlineDelete /></button>
+                        <button className="icon-btn text-danger" onClick={() => handleDelete(m.id)} title="Delete"><MdOutlineDelete /></button>
                       </div>
                     </div>
 
