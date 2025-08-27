@@ -74,7 +74,10 @@ export const Dashboard = () => {
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!msgInput.trim()) return;
+    if (!msgInput.trim()){
+       alert("Field cannot be empty!");
+      return;
+    };
 
     try {
       const payload = { sender_id: user.id, message: msgInput, replyTo: null };
@@ -115,7 +118,10 @@ export const Dashboard = () => {
 
   const handleEdit = async (e) => {
     e.preventDefault();
-    if (!editMsg.trim()) return;
+    if (!editMsg.trim()){
+      alert("Field cannot be empty!");
+      return;
+    };
 
     try {
       await axios.put(`${URL}/messages/${editInfo.id}`, { message: editMsg });
@@ -163,7 +169,7 @@ export const Dashboard = () => {
       <div className="topbar">
         <div className="brand">
           <button className="menu-btn" onClick={toggleSidebar}><MdMenu /></button>
-          <div className="logo d-none d-lg-block">Welcome</div>
+          <div className="logo d-none d-lg-block px-2">Welcome</div>
           <span>{user.username.toUpperCase()}</span>
         </div>
         <div className="actions mx-1">
@@ -226,8 +232,8 @@ export const Dashboard = () => {
                   {isEditing ? (
                     <form onSubmit={handleEdit}>
                       <input type="text" className=" form-control" value={editMsg} onChange={(e) => setEditMsg(e.target.value)} rows="1" style={{ width: '100%' }} />
-                      <button type="submit" className="btn secondary">Save</button>
-                      <button type="button" className="btn secondary" onClick={() => setEditInfo(null)}>Cancel</button>
+                      <button type="submit" className="mt-2 py-2 alert alert-primary"><MdSend /></button>
+                      <button type="button" className="ms-5 py-2 alert alert-danger" onClick={() => setEditInfo(null)}><MdClose /></button>
                     </form>
                   ) : (
                     <>
@@ -256,7 +262,7 @@ export const Dashboard = () => {
                           {isUserMessage && (
                             <button style={{backgroundColor:"bisque"}} className="icon-btn text-black" onClick={() => { setEditInfo(m); setEditMsg(m.message); }} title="Edit"><MdOutlineEdit /></button>
                           )}
-                          <button style={{backgroundColor:"bisque"}} className="icon-btn text-danger" onClick={() => handleDelete(m.id)} title="Delete"><MdOutlineDelete /></button>
+                          <button style={{backgroundColor:"bisque"}} className="icon-btn text-danger mx-3" onClick={() => handleDelete(m.id)} title="Delete"><MdOutlineDelete /></button>
                         </div>
                       </div>
 
@@ -269,8 +275,8 @@ export const Dashboard = () => {
                             value={replyInputs[m.id] || ""}
                             onChange={(e) => setReplyInputs(prev => ({ ...prev, [m.id]: e.target.value }))}
                           />
-                          <button type="submit" className="send" disabled={!replyInputs[m.id]?.trim()}><MdSend /></button>
-                          <button type="button" className="close-pill" onClick={() => setReplyingTo(null)}><MdClose /></button>
+                          <button type="submit" className="send mt-2 py-2 alert alert-primary" disabled={!replyInputs[m.id]?.trim()}><MdSend /></button>
+                          <button type="button" className="close-pill ms-5 py-2 alert alert-danger" onClick={() => setReplyingTo(null)}><MdClose /></button>
                         </form>
                       )}
 
@@ -287,8 +293,9 @@ export const Dashboard = () => {
 
           {/* main composer */}
           <form className="composer" onSubmit={handleSendMessage}>
-            <textarea value={msgInput} onChange={(e) => setMsgInput(e.target.value)} onKeyDown={handleKeyDown} placeholder="Message..." rows={1} />                            
-            <button type="submit" className="send" disabled={!msgInput.trim()}>➤<MdSend className="send-icon" /></button>
+            <textarea className=" form-control border border-4" value={msgInput} onChange={(e) => setMsgInput(e.target.value)} onKeyDown={handleKeyDown} placeholder="Message..." rows={1} />                            
+            <button type="submit" className="send">➤<MdSend className="send-icon" /></button>
+             {/* disabled={!msgInput.trim()} */}
           </form>
         </section>
       </div>
