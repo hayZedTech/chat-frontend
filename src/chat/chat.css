@@ -73,7 +73,7 @@ body {
 .brand .logo {
   text-align: center;
   border-radius: 8px;
-  background: linear-gradient(135deg, lime, var(--accent-600));
+  background: linear-gradient(135deg, green, var(--accent-600));
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -157,7 +157,7 @@ body {
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: linear-gradient(135deg, lime, var(--accent-600));
+  background: linear-gradient(135deg, green, var(--accent-600));
   display: inline-flex;
   align-items: center;
   justify-content: center;
