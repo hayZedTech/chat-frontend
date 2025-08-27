@@ -6,7 +6,7 @@ import "./Login.css";
 export const Login = ({ setCurrentUser }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false); // 🔹 Spinner state
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const loginData = async (e) => {
@@ -17,7 +17,7 @@ export const Login = ({ setCurrentUser }) => {
       return;
     }
 
-    setLoading(true); // 🔹 Start spinner
+    setLoading(true);
 
     try {
       const res = await axios.post(`${import.meta.env.VITE_API_URL}/login`, {
@@ -26,28 +26,23 @@ export const Login = ({ setCurrentUser }) => {
       });
 
       const user = res.data.user;
-
-      // Save user to localStorage
       localStorage.setItem("user", JSON.stringify(user));
-
-      // Update global state
       setCurrentUser(user);
-
-      // Navigate
       navigate("/dashboard");
     } catch (err) {
       alert(err.response?.data?.error || "Login failed");
     } finally {
-      setLoading(false); // 🔹 Stop spinner
+      setLoading(false);
     }
   };
 
   return (
     <div className="login-container">
-      {/* 🔹 Spinner Overlay */}
+      {/* 🔹 Full screen rolling spinner */}
       {loading && (
-        <div className="spinner-overlay">
-          <div className="custom-spinner"></div>
+        <div className="screen-spinner">
+          <div className="loader"></div>
+          <p className="loader-text">Signing you in...</p>
         </div>
       )}
 
@@ -65,6 +60,7 @@ export const Login = ({ setCurrentUser }) => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="login-input"
+              disabled={loading}
             />
           </div>
 
@@ -75,6 +71,7 @@ export const Login = ({ setCurrentUser }) => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="login-input"
+              disabled={loading}
             />
           </div>
 
