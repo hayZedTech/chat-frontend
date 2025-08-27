@@ -26,6 +26,7 @@ export const Dashboard = () => {
   const [replyingTo, setReplyingTo] = useState(null);
   const [replyInputs, setReplyInputs] = useState({});
   const [selectedChat, setSelectedChat] = useState({ type: "general", data: null });
+  const [loading, setLoading] = useState(false); // NEW: loading state
 
   const user = JSON.parse(localStorage.getItem("user"));
   const navigate = useNavigate();
@@ -79,6 +80,7 @@ export const Dashboard = () => {
       return;
     };
 
+    setLoading(true);
     try {
       const payload = { sender_id: user.id, message: msgInput, replyTo: null };
       if (selectedChat.type === "general") {
@@ -91,6 +93,8 @@ export const Dashboard = () => {
       await fetchMessages();
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -99,6 +103,7 @@ export const Dashboard = () => {
     const replyText = replyInputs[msg.id];
     if (!replyText || !replyText.trim()) return;
 
+    setLoading(true);
     try {
       const payload = { sender_id: user.id, message: replyText, replyTo: msg.id };
       if (selectedChat.type === "general") {
@@ -113,6 +118,8 @@ export const Dashboard = () => {
       await fetchMessages();
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -123,6 +130,7 @@ export const Dashboard = () => {
       return;
     };
 
+    setLoading(true);
     try {
       await axios.put(`${URL}/messages/${editInfo.id}`, { message: editMsg });
       setEditInfo(null);
@@ -130,15 +138,20 @@ export const Dashboard = () => {
       await fetchMessages();
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleDelete = async (id) => {
+    setLoading(true);
     try {
       await axios.delete(`${URL}/messages/${id}`);
       await fetchMessages();
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -165,6 +178,13 @@ export const Dashboard = () => {
 
   return (
     <div className="app">
+      {/* loading overlay */}
+      {loading && (
+        <div className="loading-overlay">
+          <div className="loading-text">Loading...</div>
+        </div>
+      )}
+
       {/* topbar */}
       <div className="topbar">
         <div className="brand">
