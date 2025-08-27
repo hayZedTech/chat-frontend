@@ -3,13 +3,13 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./Login.css"; 
 
-export const Login = () => {
+export const Login = ({ setCurrentUser }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const loginData = async (a) => {
-    a.preventDefault();
+  const loginData = async (e) => {
+    e.preventDefault();
 
     if (!username || !password) {
       alert("Field cannot be empty!!!");
@@ -21,10 +21,17 @@ export const Login = () => {
         username,
         password,
       });
+
+      // 1️⃣ Save user to localStorage
       localStorage.setItem("user", JSON.stringify(res.data.user));
+
+      // 2️⃣ Update global state immediately
+      if (setCurrentUser) setCurrentUser(res.data.user);
+
+      // 3️⃣ Navigate to dashboard
       navigate("/");
     } catch (err) {
-      alert(err.response?.data?.error);
+      alert(err.response?.data?.error || "Login failed");
     }
   };
 
@@ -39,25 +46,31 @@ export const Login = () => {
         <form onSubmit={loginData} className="login-form">
           <div className="input-group">
             <input
-              type="text" placeholder="Username" value={username} onChange={(x) => setUsername(x.target.value)}
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               className="login-input"
             />
           </div>
 
           <div className="input-group">
             <input
-              type="password" placeholder="Password" value={password}  onChange={(x) => setPassword(x.target.value)}  className="login-input" 
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="login-input"
             />
           </div>
 
-          <button type="submit" className="login-button">  Sign In</button>
+          <button type="submit" className="login-button">Sign In</button>
         </form>
 
         <div className="login-footer">
           <p className="signup-text">
             Don't have an account?{" "}
-            <Link to="/signup" className="signup-link">Create one </Link>
-
+            <Link to="/signup" className="signup-link">Create one</Link>
           </p>
         </div>
       </div>

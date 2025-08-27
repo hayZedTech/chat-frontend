@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import {
   MdOutlineModeNight,
   MdOutlineWbSunny,
@@ -31,6 +31,9 @@ export const Dashboard = () => {
   const navigate = useNavigate();
   const messagesEndRef = useRef();
   const lastRef = useRef(null);
+
+  // Protect route: redirect if not logged in
+  if (!user) return <Navigate to="/login" />;
 
   const fetchMessages = async () => {
     try {
@@ -63,14 +66,11 @@ export const Dashboard = () => {
   useEffect(() => {
     if (lastRef.current === "load") {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-      
     }
     lastRef.current = null;
   }, [messages]);
 
-  useEffect(()=>{
-    lastRef.current = "load";
-  }, [])
+  useEffect(()=>{ lastRef.current = "load"; }, []);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -85,8 +85,7 @@ export const Dashboard = () => {
       }
       lastRef.current = "load";
       setMsgInput("");
-     await fetchMessages();
-      
+      await fetchMessages();
     } catch (err) {
       console.error(err);
     }
@@ -108,7 +107,7 @@ export const Dashboard = () => {
 
       setReplyInputs(prev => ({ ...prev, [msg.id]: "" }));
       setReplyingTo(null);
-     await fetchMessages();
+      await fetchMessages();
     } catch (err) {
       console.error(err);
     }
@@ -122,7 +121,7 @@ export const Dashboard = () => {
       await axios.put(`${URL}/messages/${editInfo.id}`, { message: editMsg });
       setEditInfo(null);
       setEditMsg("");
-     await fetchMessages();
+      await fetchMessages();
     } catch (err) {
       console.error(err);
     }
@@ -158,149 +157,141 @@ export const Dashboard = () => {
     }
   };
 
- return (
-  <div className="app">
-    {/* topbar */}
-    <div className="topbar">
-      <div className="brand">
-        <button className="menu-btn" onClick={toggleSidebar}><MdMenu /></button>
-        <div className="logo">Welcome</div>
-        <span>{user.username.toUpperCase()}</span>
+  return (
+    <div className="app">
+      {/* topbar */}
+      <div className="topbar">
+        <div className="brand">
+          <button className="menu-btn" onClick={toggleSidebar}><MdMenu /></button>
+          <div className="logo">Welcome</div>
+          <span>{user.username.toUpperCase()}</span>
+        </div>
+        <div className="actions">
+          <button className="icon-btn" onClick={toggleTheme}>
+            <MdOutlineModeNight className="dark-icon" style={{ display: document.body.classList.contains('dark') ? 'block' : 'none' }} />
+            <MdOutlineWbSunny className="light-icon" style={{ display: document.body.classList.contains('dark') ? 'none' : 'block' }} />
+          </button>
+          <button className="icon-btn text-danger" onClick={handleLogout}>Logout</button>
+        </div>
       </div>
-      <div className="actions">
-        <button className="icon-btn" onClick={toggleTheme}>
-          <MdOutlineModeNight className="dark-icon" style={{ display: document.body.classList.contains('dark') ? 'block' : 'none' }} />
-          <MdOutlineWbSunny className="light-icon" style={{ display: document.body.classList.contains('dark') ? 'none' : 'block' }} />
-        </button>
-        <button className="icon-btn text-danger" onClick={handleLogout}>Logout</button>
-      </div>
-    </div>
 
-    <div className="main">
-      {/* sidebar */}
-      <aside className="sidebar">
-        {/* <div className="search">
-          <input type="text" placeholder="Search or start a new chat…" />
-        </div> */}
-        <div className="chats">
-          <div className={`chat-item ${selectedChat.type === 'general' ? 'active' : ''}`}
-            onClick={() => { setSelectedChat({ type: "general", data: null }); toggleSidebar(); }}>
-            <div className="avatar">GC</div>
-            <div>
-              <div className="name">General Chat</div>
-              <div className="preview">Public messages...</div>
-            </div>
-          </div>
-          {users.map(u => (
-            <div key={u.id} className={`chat-item ${selectedChat.type === 'private' && selectedChat.data.id === u.id ? 'active' : ''}`}
-              onClick={() => { setSelectedChat({ type: "private", data: u }); toggleSidebar(); }}>
-              <div className="avatar">{getInitials(u.username)}</div>
+      <div className="main">
+        {/* sidebar */}
+        <aside className="sidebar">
+          <div className="chats">
+            <div className={`chat-item ${selectedChat.type === 'general' ? 'active' : ''}`}
+              onClick={() => { setSelectedChat({ type: "general", data: null }); toggleSidebar(); }}>
+              <div className="avatar">GC</div>
               <div>
-                <div className="name">{u.username}</div>
-                <div className="preview">Start a private chat....</div>
+                <div className="name">General Chat</div>
+                <div className="preview">Public messages...</div>
               </div>
             </div>
-          ))}
-        </div>
-      </aside>
-
-      {/* chat section */}
-      <section className="chat">
-        <div className="chat-header">
-          <button className="go-back-btn" onClick={toggleSidebar}><MdArrowBackIos /></button>
-          <div className="avatar" style={{ width: 'fit-content', height: '38px' }}>
-            {selectedChat.type === 'general' ? 'GC' : selectedChat.data.username}
+            {users.map(u => (
+              <div key={u.id} className={`chat-item ${selectedChat.type === 'private' && selectedChat.data.id === u.id ? 'active' : ''}`}
+                onClick={() => { setSelectedChat({ type: "private", data: u }); toggleSidebar(); }}>
+                <div className="avatar">{getInitials(u.username)}</div>
+                <div>
+                  <div className="name">{u.username}</div>
+                  <div className="preview">Start a private chat....</div>
+                </div>
+              </div>
+            ))}
           </div>
-          <div className="title">
-            <div className="name">
-              {selectedChat.type === 'general' ? 'General Chat' : selectedChat.data.username}
+        </aside>
+
+        {/* chat section */}
+        <section className="chat">
+          <div className="chat-header">
+            <button className="go-back-btn" onClick={toggleSidebar}><MdArrowBackIos /></button>
+            <div className="avatar" style={{ width: 'fit-content', height: '38px' }}>
+              {selectedChat.type === 'general' ? 'GC' : selectedChat.data.username}
+            </div>
+            <div className="title">
+              <div className="name">
+                {selectedChat.type === 'general' ? 'General Chat' : selectedChat.data.username}
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="messages">
-          {messages.map(m => {
-            const isUserMessage = m.sender_id === user.id;
-            const replyMessage = m.replyto ? messages.find(msg => msg.id === m.replyto) : null;
-            const isEditing = editInfo?.id === m.id;
-            const truncate = (text, length) => {
-              return text.length > length ? text.slice(0, length) + "..." : text;
-            };
+          <div className="messages">
+            {messages.map(m => {
+              const isUserMessage = m.sender_id === user.id;
+              const replyMessage = m.replyto ? messages.find(msg => msg.id === m.replyto) : null;
+              const isEditing = editInfo?.id === m.id;
+              const truncate = (text, length) => text.length > length ? text.slice(0, length) + "..." : text;
 
-
-            return (
-              <div key={m.id} className={`msg ${isUserMessage ? 'from-me' : ''} ${replyMessage ? 'reply' : ''}`}>
-                {isEditing ? (
-                  <form onSubmit={handleEdit}>
-                    <input type="text" className=" form-control" value={editMsg} onChange={(e) => setEditMsg(e.target.value)} rows="1" style={{ width: '100%' }} />
-                    <button type="submit" className="btn secondary">Save</button>
-                    <button type="button" className="btn secondary" onClick={() => setEditInfo(null)}>Cancel</button>
-                  </form>
-                ) : (
-                  <>
-                    {replyMessage && (
-                      <div className="reply-preview  text-warning">
-                        <i>
-                          <div className="reply-preview-header">
-                          Replying to:
-                          {truncate(replyMessage.sender_id === user.id ? "You" : replyMessage.sender_name, 10)}
+              return (
+                <div key={m.id} className={`msg ${isUserMessage ? 'from-me' : ''} ${replyMessage ? 'reply' : ''}`}>
+                  {isEditing ? (
+                    <form onSubmit={handleEdit}>
+                      <input type="text" className=" form-control" value={editMsg} onChange={(e) => setEditMsg(e.target.value)} rows="1" style={{ width: '100%' }} />
+                      <button type="submit" className="btn secondary">Save</button>
+                      <button type="button" className="btn secondary" onClick={() => setEditInfo(null)}>Cancel</button>
+                    </form>
+                  ) : (
+                    <>
+                      {replyMessage && (
+                        <div className="reply-preview  text-warning">
+                          <i>
+                            <div className="reply-preview-header">
+                              Replying to: {truncate(replyMessage.sender_id === user.id ? "You" : replyMessage.sender_name, 10)}
+                            </div>
+                            <div className="reply-preview-message">
+                              {truncate(replyMessage.message, 20)}
+                            </div>
+                          </i>
                         </div>
-                        <div className="reply-preview-message">
-                          {truncate(replyMessage.message, 20) }
+                      )}
+
+                      <div className="bubble-row">
+                        <div className="bubble ">
+                          <span className="sender-name">{isUserMessage ? 'You: ' : `${m.sender_name}: `}</span>
+                          {m.message}
                         </div>
-                        </i>
+                        <div className="actions" >
+                          {!isUserMessage && (
+                            <button style={{backgroundColor:"bisque"}} className="icon-btn text-black" onClick={() => setReplyingTo(m)} title="Reply"><MdOutlineReply /></button>
+                          )}
+                          {isUserMessage && (
+                            <button style={{backgroundColor:"bisque"}} className="icon-btn text-black" onClick={() => { setEditInfo(m); setEditMsg(m.message); }} title="Edit"><MdOutlineEdit /></button>
+                          )}
+                          <button style={{backgroundColor:"bisque"}} className="icon-btn text-danger" onClick={() => handleDelete(m.id)} title="Delete"><MdOutlineDelete /></button>
+                        </div>
                       </div>
-                    )}
 
-                    <div className="bubble-row">
-                      <div className="bubble ">
-                        <span className="sender-name">{isUserMessage ? 'You: ' : `${m.sender_name}: `}</span>
-                        {m.message}
+                      {replyingTo?.id === m.id && (
+                        <form className="reply-box" onSubmit={(e) => handleSendReply(e, m)}>
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder={`Reply to ${m.sender_name}...`}
+                            value={replyInputs[m.id] || ""}
+                            onChange={(e) => setReplyInputs(prev => ({ ...prev, [m.id]: e.target.value }))}
+                          />
+                          <button type="submit" className="send" disabled={!replyInputs[m.id]?.trim()}><MdSend /></button>
+                          <button type="button" className="close-pill" onClick={() => setReplyingTo(null)}><MdClose /></button>
+                        </form>
+                      )}
+
+                      <div className="meta">
+                        <span>{new Date(m.created_at).toLocaleTimeString()}</span>{isUserMessage && <span> ✓✓</span>}
                       </div>
-                      <div className="actions" >
-                        {!isUserMessage && (
-                          <button style={{backgroundColor:"bisque"}} className="icon-btn text-black" onClick={() => setReplyingTo(m)} title="Reply"><MdOutlineReply /></button>
-                        )}
-                        {isUserMessage && (
-                          <button style={{backgroundColor:"bisque"}} className="icon-btn text-black" onClick={() => { setEditInfo(m); setEditMsg(m.message); }} title="Edit"><MdOutlineEdit /></button>
-                        )}
-                        <button style={{backgroundColor:"bisque"}} className="icon-btn text-danger" onClick={() => handleDelete(m.id)} title="Delete"><MdOutlineDelete /></button>
-                      </div>
-                    </div>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+            <div ref={messagesEndRef} />
+          </div>
 
-                    {replyingTo?.id === m.id && (
-                      <form className="reply-box" onSubmit={(e) => handleSendReply(e, m)}>
-                        <input
-                          type="text"
-                          className="form-control"
-                          placeholder={`Reply to ${m.sender_name}...`}
-                          value={replyInputs[m.id] || ""}
-                          onChange={(e) => setReplyInputs(prev => ({ ...prev, [m.id]: e.target.value }))}
-                        />
-                        <button type="submit" className="send" disabled={!replyInputs[m.id]?.trim()}><MdSend /></button>
-                        <button type="button" className="close-pill" onClick={() => setReplyingTo(null)}><MdClose /></button>
-                      </form>
-                    )}
-
-                    <div className="meta">
-                      <span>{new Date(m.created_at).toLocaleTimeString()}</span>{isUserMessage && <span> ✓✓</span>}
-                    </div>
-                  </>
-                )}
-              </div>
-            );
-          })}
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* main composer */}
-        <form className="composer" onSubmit={handleSendMessage}>
-          <textarea value={msgInput} onChange={(e) => setMsgInput(e.target.value)} onKeyDown={handleKeyDown} placeholder="Message..." rows={1} />                            
-          <button type="submit" className="send" disabled={!msgInput.trim()}>➤<MdSend className="send-icon" /></button>
-        </form>
-      </section>
+          {/* main composer */}
+          <form className="composer" onSubmit={handleSendMessage}>
+            <textarea value={msgInput} onChange={(e) => setMsgInput(e.target.value)} onKeyDown={handleKeyDown} placeholder="Message..." rows={1} />                            
+            <button type="submit" className="send" disabled={!msgInput.trim()}>➤<MdSend className="send-icon" /></button>
+          </form>
+        </section>
+      </div>
     </div>
-  </div>
-);
-
+  );
 };
