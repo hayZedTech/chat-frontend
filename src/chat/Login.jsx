@@ -22,11 +22,13 @@ export const Login = ({ setCurrentUser }) => {
         password,
       });
 
-      // 1️⃣ Save user to localStorage
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+      const user = res.data.user;
 
-      // 2️⃣ Update global state immediately
-      if (setCurrentUser) setCurrentUser(res.data.user);
+      // 1️⃣ Save user to localStorage
+      localStorage.setItem("user", JSON.stringify(user));
+
+      // 2️⃣ Update global state immediately (triggers re-render in App)
+      setCurrentUser(user);
 
       // 3️⃣ Navigate to dashboard
       navigate("/");
