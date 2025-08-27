@@ -31,7 +31,7 @@ export const Login = ({ setCurrentUser }) => {
       setCurrentUser(user);
 
       // 3️⃣ Navigate to dashboard
-      navigate("/");
+      navigate("/dashboard");
     } catch (err) {
       alert(err.response?.data?.error || "Login failed");
     }

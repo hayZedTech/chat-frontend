@@ -26,6 +26,7 @@ export const App = () => {
         />
         <Route path="/signup" element={<Signup setCurrentUser={setCurrentUser} />} />
         <Route path="/login" element={<Login setCurrentUser={setCurrentUser} />} />
+        <Route path="/dashboard" element={<Dashboard setCurrentUser={setCurrentUser} />} />
       </Routes>
     </Router>
   );
