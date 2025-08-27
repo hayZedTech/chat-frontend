@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState } from "react"; 
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./Login.css"; 
@@ -6,6 +6,7 @@ import "./Login.css";
 export const Login = ({ setCurrentUser }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false); // 🔹 Spinner state
   const navigate = useNavigate();
 
   const loginData = async (e) => {
@@ -16,6 +17,8 @@ export const Login = ({ setCurrentUser }) => {
       return;
     }
 
+    setLoading(true); // 🔹 Start spinner
+
     try {
       const res = await axios.post(`${import.meta.env.VITE_API_URL}/login`, {
         username,
@@ -24,21 +27,30 @@ export const Login = ({ setCurrentUser }) => {
 
       const user = res.data.user;
 
-      // 1️⃣ Save user to localStorage
+      // Save user to localStorage
       localStorage.setItem("user", JSON.stringify(user));
 
-      // 2️⃣ Update global state immediately (triggers re-render in App)
+      // Update global state
       setCurrentUser(user);
 
-      // 3️⃣ Navigate to dashboard
+      // Navigate
       navigate("/dashboard");
     } catch (err) {
       alert(err.response?.data?.error || "Login failed");
+    } finally {
+      setLoading(false); // 🔹 Stop spinner
     }
   };
 
   return (
     <div className="login-container">
+      {/* 🔹 Spinner Overlay */}
+      {loading && (
+        <div className="spinner-overlay">
+          <div className="custom-spinner"></div>
+        </div>
+      )}
+
       <div className="login-card">
         <div className="login-header">
           <h1 className="login-title">Welcome Back</h1>
@@ -66,7 +78,9 @@ export const Login = ({ setCurrentUser }) => {
             />
           </div>
 
-          <button type="submit" className="login-button">Sign In</button>
+          <button type="submit" className="login-button" disabled={loading}>
+            {loading ? "Signing In..." : "Sign In"}
+          </button>
         </form>
 
         <div className="login-footer">
