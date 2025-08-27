@@ -154,7 +154,7 @@ export const Dashboard = () => {
       <div className="brand">
         <button className="menu-btn" onClick={toggleSidebar}><MdMenu /></button>
         <div className="logo">C</div>
-        <span>Chat App</span>
+        <span>{user.username.toUpperCase()}</span>
       </div>
       <div className="actions">
         <button className="icon-btn" onClick={toggleTheme}>
