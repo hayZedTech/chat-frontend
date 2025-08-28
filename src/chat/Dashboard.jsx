@@ -275,7 +275,7 @@ export const Dashboard = () => {
                    {isShow && (
                 <div
                   className="msg-menu shadow-lg rounded bg-white border p-2 position-absolute"
-                  style={{ right: "40px", zIndex: 10 }}
+                  style={{ right: "50px", zIndex: 10 }}
                 >
                   {!isUserMessage && (
                     <button
