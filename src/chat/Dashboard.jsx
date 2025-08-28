@@ -197,7 +197,7 @@ export const Dashboard = () => {
             <MdOutlineModeNight className="dark-icon" style={{ display: document.body.classList.contains('dark') ? 'block' : 'none' }} />
             <MdOutlineWbSunny className="light-icon" style={{ display: document.body.classList.contains('dark') ? 'none' : 'block' }} />
           </button>
-          <button className="icon-btn text-danger" onClick={handleLogout}>Logout</button>
+          <button className="icon-btn text-danger py-1" onClick={handleLogout}>Logout</button>
         </div>
       </div>
 
