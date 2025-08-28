@@ -9,7 +9,8 @@ import {
   MdOutlineReply,
   MdClose,
   MdMenu,
-  MdArrowBackIos
+  MdArrowBackIos,
+  MdMoreVert
 } from 'react-icons/md';
 import { MdSend } from 'react-icons/md';
 
@@ -27,7 +28,8 @@ export const Dashboard = () => {
   const [replyInputs, setReplyInputs] = useState({});
   const [selectedChat, setSelectedChat] = useState({ type: "general", data: null });
   const [loading, setLoading] = useState(false); // NEW: loading state
-
+  const [allbtn, setAllbtn] = useState(null);
+  
   const user = JSON.parse(localStorage.getItem("user"));
   const navigate = useNavigate();
   const messagesEndRef = useRef();
@@ -176,6 +178,19 @@ export const Dashboard = () => {
     }
   };
 
+  // ✅ simpler no-ref outside click handler
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest(".msg-menu") && !event.target.closest(".float-end")) {
+        setAllbtn(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+
   return (
     <div className="app">
       {/* loading overlay */}
@@ -245,10 +260,49 @@ export const Dashboard = () => {
               const isUserMessage = m.sender_id === user.id;
               const replyMessage = m.replyto ? messages.find(msg => msg.id === m.replyto) : null;
               const isEditing = editInfo?.id === m.id;
+              const isShow = allbtn === m.id;
               const truncate = (text, length) => text.length > length ? text.slice(0, length) + "..." : text;
 
               return (
                 <div key={m.id} className={`msg ${isUserMessage ? 'from-me' : ''} ${replyMessage ? 'reply' : ''}`}>
+                  <button
+                      className="float-end rounded p-2 py-1 ms-3"
+                      onClick={() => setAllbtn(isShow ? null : m.id)}  // toggle
+                    >
+                    <MdMoreVert />
+                  </button>
+
+                   {isShow && (
+                <div
+                  className="msg-menu shadow-lg rounded bg-white border p-2 position-absolute"
+                  style={{ right: "40px", zIndex: 10 }}
+                >
+                  {!isUserMessage && (
+                    <button
+                      className="dropdown-item text-primary d-flex align-items-center gap-2"
+                      onClick={() => setReplyingTo(m)}
+                    >
+                      <MdOutlineReply /> Reply
+                    </button>
+                  )}
+                  {isUserMessage && (
+                    <button
+                      className="dropdown-item text-warning d-flex align-items-center gap-2"
+                      onClick={() => { setEditInfo(m); setEditMsg(m.message); }}
+                    >
+                      <MdOutlineEdit /> Edit
+                    </button>
+                  )}
+                  <button
+                    className="dropdown-item text-danger d-flex align-items-center gap-2"
+                    onClick={() => handleDelete(m.id)}
+                  >
+                    <MdOutlineDelete /> Delete
+                  </button>
+                  <div className="dropdown-divider my-1"></div>
+                </div>
+              )}
+
                   {isEditing ? (
                     <form onSubmit={handleEdit}>
                       <input type="text" className=" form-control" value={editMsg} onChange={(e) => setEditMsg(e.target.value)} rows="1" style={{ width: '100%' }} />
@@ -275,15 +329,6 @@ export const Dashboard = () => {
                           <span className="sender-name">{isUserMessage ? 'You: ' : `${m.sender_name}: `}</span>
                           {m.message}
                         </div>
-                        <div className="actions" >
-                          {!isUserMessage && (
-                            <button style={{backgroundColor:"bisque"}} className="icon-btn text-black" onClick={() => setReplyingTo(m)} title="Reply"><MdOutlineReply /></button>
-                          )}
-                          {isUserMessage && (
-                            <button style={{backgroundColor:"bisque"}} className="icon-btn text-black" onClick={() => { setEditInfo(m); setEditMsg(m.message); }} title="Edit"><MdOutlineEdit /></button>
-                          )}
-                          <button style={{backgroundColor:"bisque"}} className="icon-btn text-danger mx-3" onClick={() => handleDelete(m.id)} title="Delete"><MdOutlineDelete /></button>
-                        </div>
                       </div>
 
                       {replyingTo?.id === m.id && (
@@ -304,7 +349,7 @@ export const Dashboard = () => {
                         <span>
                           {new Date(m.created_at).toLocaleString("en-US", {
                             day: "2-digit",
-                            month: "short",  // or "long" if you want full month name
+                            month: "short",
                             year: "numeric",
                             hour: "2-digit",
                             minute: "2-digit"
@@ -324,7 +369,6 @@ export const Dashboard = () => {
           <form className="composer" onSubmit={handleSendMessage}>
             <textarea className=" form-control border border-4" value={msgInput} onChange={(e) => setMsgInput(e.target.value)} onKeyDown={handleKeyDown} placeholder="Message..." rows={1} />                            
             <button type="submit" className="send">➤<MdSend className="send-icon" /></button>
-             {/* disabled={!msgInput.trim()} */}
           </form>
         </section>
       </div>

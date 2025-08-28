@@ -502,3 +502,19 @@ body {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+
+/* isShow */
+.msg-menu {
+  min-width: 140px;
+}
+.msg-menu .dropdown-item {
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.msg-menu .dropdown-item:hover {
+  background: #f5f5f5;
+}
+
