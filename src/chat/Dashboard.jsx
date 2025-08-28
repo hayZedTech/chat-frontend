@@ -27,7 +27,7 @@ export const Dashboard = () => {
   const [replyingTo, setReplyingTo] = useState(null);
   const [replyInputs, setReplyInputs] = useState({});
   const [selectedChat, setSelectedChat] = useState({ type: "general", data: null });
-  const [loading, setLoading] = useState(false); // NEW: loading state
+  const [loading, setLoading] = useState(false);
   const [allbtn, setAllbtn] = useState(null);
   
   const user = JSON.parse(localStorage.getItem("user"));
@@ -35,7 +35,6 @@ export const Dashboard = () => {
   const messagesEndRef = useRef();
   const lastRef = useRef(null);
 
-  // Protect route: redirect if not logged in
   if (!user) return <Navigate to="/login" />;
 
   const fetchMessages = async () => {
@@ -65,6 +64,12 @@ export const Dashboard = () => {
 
   useEffect(() => { fetchUsers(); }, []);
   useEffect(() => { fetchMessages(); }, [selectedChat]);
+
+  // ✅ Auto-refresh messages every 1 second
+  useEffect(() => {
+    const interval = setInterval(fetchMessages, 1000);
+    return () => clearInterval(interval);
+  }, [selectedChat]);
 
   useEffect(() => {
     if (lastRef.current === "load") {
@@ -280,7 +285,7 @@ export const Dashboard = () => {
                   {!isUserMessage && (
                     <button
                       className="dropdown-item text-primary d-flex align-items-center gap-2"
-                      onClick={() => setReplyingTo(m)}
+                      onClick={() => { setReplyingTo(m); setAllbtn(null); }}
                     >
                       <MdOutlineReply /> Reply
                     </button>
@@ -288,14 +293,14 @@ export const Dashboard = () => {
                   {isUserMessage && (
                     <button
                       className="dropdown-item text-warning d-flex align-items-center gap-2"
-                      onClick={() => { setEditInfo(m); setEditMsg(m.message); }}
+                      onClick={() => { setEditInfo(m); setEditMsg(m.message); setAllbtn(null); }}
                     >
                       <MdOutlineEdit /> Edit
                     </button>
                   )}
                   <button
                     className="dropdown-item text-danger d-flex align-items-center gap-2"
-                    onClick={() => handleDelete(m.id)}
+                    onClick={() => { handleDelete(m.id); setAllbtn(null); }}
                   >
                     <MdOutlineDelete /> Delete
                   </button>
