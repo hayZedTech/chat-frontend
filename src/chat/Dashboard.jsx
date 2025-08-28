@@ -299,7 +299,7 @@ export const Dashboard = () => {
                     </button>
                   )}
                   <button
-                    className="dropdown-item text-danger d-flex align-items-center gap-2"
+                    className=" mt-2 dropdown-item text-danger d-flex align-items-center gap-2"
                     onClick={() => { handleDelete(m.id); setAllbtn(null); }}
                   >
                     <MdOutlineDelete /> Delete
