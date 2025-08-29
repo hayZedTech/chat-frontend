@@ -71,6 +71,18 @@ export const Dashboard = () => {
     return () => clearInterval(interval);
   }, [selectedChat]);
 
+  // ✅ FIX: Refresh instantly when tab becomes visible again
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        fetchUsers();
+        fetchMessages();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, [selectedChat]);
+
   useEffect(() => {
     if (lastRef.current === "load") {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
